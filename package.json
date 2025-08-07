@@ -1,6 +1,6 @@
 {
-  "name": "vpdf-monorepo",
-  "version": "0.1.0",
+  "name": "vpdf-sp-fork",
+  "version": "0.1.1",
   "workspaces": [
     "packages/*"
   ],
@@ -11,12 +11,14 @@
     "copy404": "copyfiles -f packages/preview/404.html docs",
     "preview": "vite preview"
   },
-  "dependencies": {},
   "devDependencies": {
     "autoprefixer": "^10.4.21",
     "copyfiles": "^2.4.1",
     "postcss": "^8.5.3",
     "postcss-import": "^16.1.0",
     "sass": "^1.85.1"
+  },
+  "dependencies": {
+    "@vueuse/core": "^13.6.0"
   }
 }

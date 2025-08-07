@@ -28,7 +28,7 @@ Custom PDF viewer for Vue. Built on top of [PDF.js](https://github.com/mozilla/p
 ## Installation
 
 ```js
-$ npm i @whykhamist/vpdf
+$ npm i vpdf-sp-fork
 ```
 
 ## Setup

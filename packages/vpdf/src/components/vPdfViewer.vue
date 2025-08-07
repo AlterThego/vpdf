@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { PDFDocumentLoadingTask } from "pdfjs-dist";
-import { PropType, computed, defineAsyncComponent, ref, watch } from "vue";
+import { PropType, computed, defineAsyncComponent, ref, watch, onMounted } from "vue";
 import { usePdfViewer } from "../composables/usePdfViewer";
 
 const VPdfPageRenderer = defineAsyncComponent(
@@ -49,7 +49,7 @@ const props = defineProps({
   },
   renderDelay: {
     type: Number,
-    default: 50,
+    default: 150,
   },
 
   renderOffset: {
@@ -59,11 +59,11 @@ const props = defineProps({
 
   onProgress: {
     type: Function,
-    default: () => {},
+    default: () => { },
   },
 });
 
-const emit = defineEmits(["update:page", "update:scale", "progress"]);
+const emit = defineEmits(["update:page", "update:scale", "progress", "rendered"]);
 
 const container = ref<HTMLElement>();
 
@@ -135,38 +135,24 @@ defineExpose(slotBinds.value);
 </script>
 
 <template>
-  <div
-    ref="container"
-    class="relative grid h-full min-h-0 w-full min-w-0 items-center overflow-scroll bg-foreground/15"
+  <div ref="container" class="relative grid h-full min-h-0 w-full min-w-0 items-center overflow-scroll bg-foreground/15"
     :class="{
       'grid items-center': viewMode != 'vertical',
-    }"
-  >
+    }">
     <slot v-bind="slotBinds" name="prepend" />
-    <div
-      v-if="!!pdf"
-      class="relative mx-auto"
-      :style="{
-        width: `${containerBounds.width}px`,
-        height: `${containerBounds.height}px`,
-      }"
-    >
+    <div v-if="!!pdf" class="relative mx-auto" :style="{
+      width: `${containerBounds.width}px`,
+      height: `${containerBounds.height}px`,
+    }">
       <slot v-bind="slotBinds">
         <template v-for="vp in visiblePages" :key="vp.id">
           <slot name="renderer" :pdf="pdf" :pageInfo="vp" :render="render">
-            <VPdfPageRenderer
-              :pdf="pdf"
-              :pageInfo="vp"
-              class="absolute"
-              :textLayer="textLayer"
-              :render="render"
-              :style="{
-                top: `${vp.bounds.inner.top}px`,
-                left: `${vp.bounds.inner.left}px`,
-                width: `${vp.viewport.width}px`,
-                height: `${vp.viewport.height}px`,
-              }"
-            />
+            <VPdfPageRenderer :pdf="pdf" :pageInfo="vp" class="absolute" :textLayer="textLayer" :render="render" :style="{
+              top: `${vp.bounds.inner.top}px`,
+              left: `${vp.bounds.inner.left}px`,
+              width: `${vp.viewport.width}px`,
+              height: `${vp.viewport.height}px`,
+            }" @rendered="emit('rendered')" />
           </slot>
         </template>
       </slot>

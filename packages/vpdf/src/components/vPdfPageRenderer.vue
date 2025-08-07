@@ -38,10 +38,10 @@ const props = withDefaults(
   {
     textLayer: false,
     render: false,
-    onRender: () => {},
+    onRender: () => { },
   }
 );
-
+const emit = defineEmits(['rendered'])
 const rendering = ref(false);
 const canva = ref<HTMLCanvasElement>();
 const renderer = shallowRef();
@@ -101,6 +101,7 @@ watch(
 onMounted(async () => {
   if (props.render) {
     await renderPage();
+    emit('rendered')
   }
 });
 
@@ -121,35 +122,17 @@ defineExpose({
   <div class="leading-none">
     <div class="relative h-full w-full bg-white leading-none">
       <slot name="prepend" />
-      <canvas
-        ref="canva"
-        class="box-border h-full w-full border border-gray-400 bg-white outline-none"
-        :class="{
-          hidden: rendering,
-        }"
-        :width="pageInfo.viewport.width"
-        :height="pageInfo.viewport.height"
-      />
-      <TextLayer
-        v-if="textLayer && renderedPage"
-        :page="renderedPage!"
-        :pageInfo="pageInfo"
-      />
-      <Transition
-        enter-from-class="opacity-0 blur-sm"
-        leave-to-class="opacity-0 blur-sm"
-        enter-active-class="transition"
-        leave-active-class="transition"
-      >
-        <div
-          v-if="rendering"
-          class="absolute inset-0 flex items-center bg-black/5"
-        >
+      <canvas ref="canva" class="box-border h-full w-full border border-gray-400 bg-white outline-none" :class="{
+        hidden: rendering,
+      }" :width="pageInfo.viewport.width" :height="pageInfo.viewport.height" />
+      <TextLayer v-if="textLayer && renderedPage" :page="renderedPage!" :pageInfo="pageInfo" />
+      <Transition enter-from-class="opacity-0 blur-sm" leave-to-class="opacity-0 blur-sm"
+        enter-active-class="transition" leave-active-class="transition">
+        <div v-if="rendering" class="absolute inset-0 flex items-center bg-black/5">
           <div class="mx-auto">
             <span
               class="realtive block h-[1em] w-[1em] animate-mltShdSpin overflow-hidden rounded-full -indent-[9999em] text-sm leading-none text-black"
-              style="transform: translateZ(0)"
-            ></span>
+              style="transform: translateZ(0)"></span>
           </div>
         </div>
       </Transition>

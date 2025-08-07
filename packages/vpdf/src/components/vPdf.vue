@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { defineAsyncComponent, ref, computed, toRef, watch } from "vue";
+import { defineAsyncComponent, ref, computed, toRef, watch, onMounted, onBeforeUnmount } from "vue";
 import { pdfSource, Point } from "../types/pdf";
 import { usePdf } from "../composables/usePdf";
+import { useDebounceFn } from "@vueuse/core";
 import type { OnProgressParameters } from "pdfjs-dist/types/src/display/api";
 
 const PDFViewer = defineAsyncComponent(() => import("./vPdfViewer.vue"));
@@ -107,15 +108,18 @@ const sidebarOptions = computed(() => ({
 
 const onViewerProgress = (e: OnProgressParameters) => {
   progress.value.viewer = (e.loaded / e.total) * 15;
+  fitPage('width')
+
 };
 
 const changePage = (page: number, offset: Point | null = null) => {
   viewer.value?.changePage(page, offset);
 };
 
-const fitPage = (mode: "fit" | "width" | "height" = "fit") => {
+const fitPage = useDebounceFn((mode: "fit" | "width" | "height" = "fit") => {
+  console.log('hello na debounce')
   viewerOptions.value.scale = viewer.value?.fitPage(mode);
-};
+}, 500);
 
 const onMouseWheel = (e: any) => {
   if (e.ctrlKey) {
@@ -129,7 +133,7 @@ const onMouseWheel = (e: any) => {
         scaleIndex > -1
           ? scaleIndex
           : scales.findIndex((s: any) => s.value >= viewerOptions.value.scale) -
-            1;
+          1;
       scaleIndex = Math.min(
         scaleIndex + 1,
         scales.filter((s: any) => !!s.value).length - 1
@@ -139,8 +143,8 @@ const onMouseWheel = (e: any) => {
         scaleIndex > -1
           ? scaleIndex
           : scales.findLastIndex(
-              (s: any) => s.value <= viewerOptions.value.scale
-            ) + 1;
+            (s: any) => s.value <= viewerOptions.value.scale
+          ) + 1;
       scaleIndex = Math.max(scaleIndex - 1, 0);
     }
     viewerOptions.value.scale = scales[scaleIndex].value;
@@ -158,82 +162,46 @@ watch(
     error.value = undefined;
   }
 );
+
+
+// onMounted(()=> {
+//  fitPage('width')
+// })
+// setTimeout(() => {
+ 
+// }, 500)
 </script>
 
 <template>
-  <div
-    class="relative flex h-full flex-col border border-gray-400/25 bg-background text-foreground"
-  >
-    <PDFMenu
-      ref="menu"
-      :pages="pages"
-      :page="viewer?.currentPage ?? 1"
-      :loading="loading"
-      v-model:mode="viewerOptions.mode"
-      v-model:scale="viewerOptions.scale"
-      v-model:sidebar="viewerOptions.sidebar"
-      v-model:rotation="viewerOptions.rotation"
-      @fitPage="fitPage"
-      @update:page="changePage"
-    >
+  <div class="relative flex h-full flex-col border border-gray-400/25 bg-background text-foreground">
+    <PDFMenu ref="menu" :pages="pages" :page="viewer?.currentPage ?? 1" :loading="loading"
+      v-model:mode="viewerOptions.mode" v-model:scale="viewerOptions.scale" v-model:sidebar="viewerOptions.sidebar"
+      v-model:rotation="viewerOptions.rotation" @fitPage="fitPage" @update:page="changePage">
       <template #prepend>
         <div class="absolute inset-x-0 bottom-0">
-          <Progress
-            v-if="progress.loader + progress.viewer < 100"
-            :value="+(progress.loader + progress.viewer).toFixed(2)"
-            class="h-0.5 w-full"
-          />
+          <Progress v-if="progress.loader + progress.viewer < 100"
+            :value="+(progress.loader + progress.viewer).toFixed(2)" class="h-0.5 w-full" />
         </div>
-        <div
-          v-if="!!error"
-          class="absolute top-full z-20 w-full bg-negative px-2 py-1 text-sm font-semibold leading-none text-rose-50"
-        >
+        <div v-if="!!error"
+          class="absolute top-full z-20 w-full bg-negative px-2 py-1 text-sm font-semibold leading-none text-rose-50">
           {{ error.message }}
         </div>
       </template>
     </PDFMenu>
     <div class="relative flex min-h-0 min-w-0 flex-auto">
-      <PDFSideBar
-        v-if="!error"
-        v-model="viewerOptions.sidebar"
-        :pdf="pdf"
-        :options="sidebarOptions"
-        :outline="outline"
-        :attachments="attachments"
-        :page="viewer?.currentPage ?? 1"
-        :rotation="viewerOptions.rotation"
-        @changePage="(e) => changePage(e.page, e.offset)"
-      />
-      <PDFViewer
-        v-if="!!pdf && !loading && !error"
-        ref="viewer"
-        :pdf="pdf"
-        :smoothJump="smoothJump"
-        :view="viewerOptions.mode"
-        :textLayer="textLayer"
-        :rotation="viewerOptions.rotation"
-        @progress="onViewerProgress"
-        v-model:scale="viewerOptions.scale"
-        class="max-h-full min-h-0 min-w-0 flex-auto transition-all"
-        :class="{
+      <PDFSideBar v-if="!error" v-model="viewerOptions.sidebar" :pdf="pdf" :options="sidebarOptions" :outline="outline"
+        :attachments="attachments" :page="viewer?.currentPage ?? 1" :rotation="viewerOptions.rotation"
+        @changePage="(e) => changePage(e.page, e.offset)" />
+      <PDFViewer v-if="!!pdf && !loading && !error" ref="viewer" :pdf="pdf" :smoothJump="smoothJump"
+        :view="viewerOptions.mode" :textLayer="textLayer" :rotation="viewerOptions.rotation"
+        @progress="onViewerProgress" v-model:scale="viewerOptions.scale"
+        class="max-h-full min-h-0 min-w-0 flex-auto transition-all" :class="{
           'md:ml-72': viewerOptions.sidebar && !error,
           'md:ml-4': !viewerOptions.sidebar && !error,
-        }"
-        @wheel="onMouseWheel"
-        @mousewheel="onMouseWheel"
-      />
+        }" @wheel="onMouseWheel" @mousewheel="onMouseWheel"/>
     </div>
-    <PDFDialog
-      v-model="dialog.show"
-      :persistent="dialog.persistent"
-      v-slot="{ close }"
-      class="z-20"
-    >
-      <PDFPassword
-        :callback="dialog.data.cb"
-        :reason="dialog.data.reason"
-        class=""
-      />
+    <PDFDialog v-model="dialog.show" :persistent="dialog.persistent" v-slot="{ close }" class="z-20">
+      <PDFPassword :callback="dialog.data.cb" :reason="dialog.data.reason" class="" />
     </PDFDialog>
   </div>
 </template>
