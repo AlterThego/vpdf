@@ -1,6 +1,6 @@
 {
-  "name": "@whykhamist/vpdf",
-  "version": "1.0.1-alpha",
+  "name": "@alterthego/vpdf",
+  "version": "1.0.2",
   "files": [
     "dist",
     "src"
