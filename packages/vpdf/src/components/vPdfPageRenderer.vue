@@ -41,7 +41,6 @@ const props = withDefaults(
     onRender: () => { },
   }
 );
-const emit = defineEmits(['rendered'])
 const rendering = ref(false);
 const canva = ref<HTMLCanvasElement>();
 const renderer = shallowRef();
@@ -101,7 +100,6 @@ watch(
 onMounted(async () => {
   if (props.render) {
     await renderPage();
-    emit('rendered')
   }
 });
 

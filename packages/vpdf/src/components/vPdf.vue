@@ -5,6 +5,8 @@ import { usePdf } from "../composables/usePdf";
 import { useDebounceFn } from "@vueuse/core";
 import type { OnProgressParameters } from "pdfjs-dist/types/src/display/api";
 
+import Skeleton from './fallbacks/Skeleton.vue'
+import ErrorLoading from './fallbacks/ErrorLoading.vue'
 const PDFViewer = defineAsyncComponent(() => import("./vPdfViewer.vue"));
 const PDFMenu = defineAsyncComponent(() => import("./menu/index.vue"));
 const PDFDialog = defineAsyncComponent(() => import("./dialog/index.vue"));
@@ -106,20 +108,22 @@ const sidebarOptions = computed(() => ({
   attachments: true,
 }));
 
+let runOnce = true
 const onViewerProgress = (e: OnProgressParameters) => {
+  if (runOnce) {
+    fitPage("width")
+    runOnce = false
+  }
   progress.value.viewer = (e.loaded / e.total) * 15;
-  fitPage('width')
-
 };
 
 const changePage = (page: number, offset: Point | null = null) => {
   viewer.value?.changePage(page, offset);
 };
 
-const fitPage = useDebounceFn((mode: "fit" | "width" | "height" = "fit") => {
-  console.log('hello na debounce')
+const fitPage = (mode: "fit" | "width" | "height" = "fit") => {
   viewerOptions.value.scale = viewer.value?.fitPage(mode);
-}, 500);
+};
 
 const onMouseWheel = (e: any) => {
   if (e.ctrlKey) {
@@ -162,14 +166,6 @@ watch(
     error.value = undefined;
   }
 );
-
-
-// onMounted(()=> {
-//  fitPage('width')
-// })
-// setTimeout(() => {
- 
-// }, 500)
 </script>
 
 <template>
@@ -179,12 +175,8 @@ watch(
       v-model:rotation="viewerOptions.rotation" @fitPage="fitPage" @update:page="changePage">
       <template #prepend>
         <div class="absolute inset-x-0 bottom-0">
-          <Progress v-if="progress.loader + progress.viewer < 100"
+          <Progress v-if="progress.loader + progress.viewer < 100 && !error"
             :value="+(progress.loader + progress.viewer).toFixed(2)" class="h-0.5 w-full" />
-        </div>
-        <div v-if="!!error"
-          class="absolute top-full z-20 w-full bg-negative px-2 py-1 text-sm font-semibold leading-none text-rose-50">
-          {{ error.message }}
         </div>
       </template>
     </PDFMenu>
@@ -192,13 +184,15 @@ watch(
       <PDFSideBar v-if="!error" v-model="viewerOptions.sidebar" :pdf="pdf" :options="sidebarOptions" :outline="outline"
         :attachments="attachments" :page="viewer?.currentPage ?? 1" :rotation="viewerOptions.rotation"
         @changePage="(e) => changePage(e.page, e.offset)" />
-      <PDFViewer v-if="!!pdf && !loading && !error" ref="viewer" :pdf="pdf" :smoothJump="smoothJump"
+      <Skeleton v-if="loading" />
+      <PDFViewer v-else v-if="!!pdf && !loading && !error" ref="viewer" :pdf="pdf" :smoothJump="smoothJump"
         :view="viewerOptions.mode" :textLayer="textLayer" :rotation="viewerOptions.rotation"
         @progress="onViewerProgress" v-model:scale="viewerOptions.scale"
         class="max-h-full min-h-0 min-w-0 flex-auto transition-all" :class="{
           'md:ml-72': viewerOptions.sidebar && !error,
           'md:ml-4': !viewerOptions.sidebar && !error,
-        }" @wheel="onMouseWheel" @mousewheel="onMouseWheel"/>
+        }" @wheel="onMouseWheel" @mousewheel="onMouseWheel" />
+      <ErrorLoading v-if="!!error" />
     </div>
     <PDFDialog v-model="dialog.show" :persistent="dialog.persistent" v-slot="{ close }" class="z-20">
       <PDFPassword :callback="dialog.data.cb" :reason="dialog.data.reason" class="" />

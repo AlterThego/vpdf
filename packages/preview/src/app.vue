@@ -6,7 +6,7 @@ import pdf from "@files/attachments.pdf";
 import secured from "@files/acrobat_reference_secured.pdf";
 
 const onlineSrc =
-  "https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/pdfreference1.7old.pdf";
+  "https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/pdfreferenasdasdce1.7old.pdf";
 
 const src = ref(pdf);
 // const src = ref({ url: pdf, enableXfa: true }); // xfa enabled

@@ -19,6 +19,7 @@ import type {
   pdfattachment,
   pdfSource,
 } from "../types/pdf";
+import { usePdfViewer } from "./usePdfViewer";
 
 const setWorker = (worker: string) => {
   if (!pdfjs.GlobalWorkerOptions.workerSrc) {
