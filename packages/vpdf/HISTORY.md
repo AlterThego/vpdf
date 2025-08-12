@@ -1,3 +1,13 @@
+### 1.0.4 / 08-9-2025
+
+    - Fit width as default
+    - Fixed warnings 
+
+### 1.0.3 / 08-9-2025
+
+    - Fit width as default
+    - For testing only
+
 ### 1.0.2-alpha / 03-11-2025
 
     - Fixed build issue

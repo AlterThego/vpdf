@@ -108,13 +108,16 @@ const sidebarOptions = computed(() => ({
   attachments: true,
 }));
 
-let runOnce = true
+const ctr = ref(0)
 const onViewerProgress = (e: OnProgressParameters) => {
-  if (runOnce) {
-    fitPage("width")
-    runOnce = false
+  const prog = (e.loaded / e.total) * 15
+  progress.value.viewer = prog;
+  if (prog >= 15 && ctr.value < 1) {
+    setTimeout(() => {
+      fitPage('width');
+      ctr.value++
+    }, 100);
   }
-  progress.value.viewer = (e.loaded / e.total) * 15;
 };
 
 const changePage = (page: number, offset: Point | null = null) => {
