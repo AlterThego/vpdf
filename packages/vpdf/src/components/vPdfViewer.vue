@@ -135,8 +135,8 @@ defineExpose(slotBinds.value);
 </script>
 
 <template>
-  <div ref="container" class="relative grid h-full min-h-0 w-full min-w-0 items-center overflow-scroll bg-foreground/15"
-    :class="{
+  <div ref="container"
+    class="relative grid h-full min-h-0 w-full min-w-0 items-center overflow-scroll touch-auto bg-foreground/15" :class="{
       'grid items-center': viewMode != 'vertical',
     }">
     <slot v-bind="slotBinds" name="prepend" />

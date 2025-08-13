@@ -126,7 +126,7 @@ defineExpose({
       <TextLayer v-if="textLayer && renderedPage" :page="renderedPage!" :pageInfo="pageInfo" />
       <Transition enter-from-class="opacity-0 blur-sm" leave-to-class="opacity-0 blur-sm"
         enter-active-class="transition" leave-active-class="transition">
-        <div v-if="rendering" class="absolute inset-0 flex items-center bg-black/5">
+        <div v-if="rendering" class="absolute inset-0 flex items-start pt-[10vw] bg-black/5">
           <div class="mx-auto">
             <span
               class="realtive block h-[1em] w-[1em] animate-mltShdSpin overflow-hidden rounded-full -indent-[9999em] text-sm leading-none text-black"

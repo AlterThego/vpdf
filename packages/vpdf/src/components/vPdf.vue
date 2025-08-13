@@ -7,6 +7,7 @@ import type { OnProgressParameters } from "pdfjs-dist/types/src/display/api";
 
 import Skeleton from './fallbacks/Skeleton.vue'
 import ErrorLoading from './fallbacks/ErrorLoading.vue'
+import { useSizeObserver } from "../composables/useSizeObserver";
 const PDFViewer = defineAsyncComponent(() => import("./vPdfViewer.vue"));
 const PDFMenu = defineAsyncComponent(() => import("./menu/index.vue"));
 const PDFDialog = defineAsyncComponent(() => import("./dialog/index.vue"));
@@ -39,7 +40,7 @@ const props = withDefaults(
   }>(),
   {
     smoothJump: false,
-    textLayer: false,
+    textLayer: false
   }
 );
 
@@ -112,11 +113,13 @@ const ctr = ref(0)
 const onViewerProgress = (e: OnProgressParameters) => {
   const prog = (e.loaded / e.total) * 15
   progress.value.viewer = prog;
-  if (prog >= 15 && ctr.value < 1) {
-    setTimeout(() => {
-      fitPage('width');
-      ctr.value++
-    }, 100);
+  if (window.innerWidth > 640) {
+    if (prog >= 15 && ctr.value < 1) {
+      setTimeout(() => {
+        fitPage('width');
+        ctr.value++
+      }, 100);
+    }
   }
 };
 
