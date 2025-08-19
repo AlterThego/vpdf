@@ -1,5 +1,9 @@
 ### 1.0.5 / 08-13-2025
 
+    - Reverted changes on loader placement
+
+### 1.0.5 / 08-13-2025
+
     - Fit page will not trigger in small screens
 
 ### 1.0.4 / 08-9-2025
